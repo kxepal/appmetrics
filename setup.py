@@ -1,28 +1,27 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = "AppMetrics",
-    version = "0.4.2",
+    name="AppMetrics",
+    version="0.4.2",
 
-    packages = find_packages(),
+    packages=find_packages(),
 
-    scripts = [],
+    scripts=[],
 
-    install_requires = [],
+    install_requires=[],
 
-    package_data = {
-    },
+    package_data={},
 
     # metadata for upload to PyPI
-    author = "Antonio Valente",
-    author_email = "y3sman@gmail.com",
-    description = "Application metrics collector",
-    license = "Apache 2.0",
-    keywords = ["metrics", "folsom", "histogram", "metric", "monitor"],
-    url = "https://github.com/avalente/appmetrics",
-    platforms = 'Platform Independent',
+    author="Antonio Valente",
+    author_email="y3sman@gmail.com",
+    description="Application metrics collector",
+    license="Apache 2.0",
+    keywords=["metrics", "folsom", "histogram", "metric", "monitor"],
+    url="https://github.com/avalente/appmetrics",
+    platforms='Platform Independent',
 
-    classifiers = [
+    classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "Intended Audience :: System Administrators",
