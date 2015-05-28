@@ -1,7 +1,7 @@
-import mock
 from nose.tools import assert_equal, assert_in, raises, assert_is, assert_is_instance, assert_false, assert_true
 
 from .. import metrics as mm, exceptions, histogram, simple_metrics as simple, meter
+from ..py3comp import mock
 
 
 class TestMetricsModule(object):

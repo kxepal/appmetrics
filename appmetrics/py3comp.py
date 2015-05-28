@@ -20,6 +20,13 @@ Python 3 compatibility
 
 import sys
 import json
+try:
+    from unittest import mock
+except ImportError:
+    try:
+        import mock
+    except ImportError:
+        mock = None
 
 PY3 = sys.version_info[0] == 3
 

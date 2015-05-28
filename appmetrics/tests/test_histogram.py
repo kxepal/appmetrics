@@ -1,10 +1,9 @@
 import random
 
 from nose import tools as nt
-import mock
 
 from .. import histogram as mm
-from ..py3comp import assert_items_equal
+from ..py3comp import assert_items_equal, mock
 
 def test_uniform_reservoir_defaults():
     ur = mm.UniformReservoir()

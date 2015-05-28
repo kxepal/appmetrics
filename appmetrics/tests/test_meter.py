@@ -1,9 +1,9 @@
 import logging
 
 from nose.tools import assert_equal, assert_almost_equal, raises
-import mock
 
 from .. import meter as mm
+from ..py3comp import mock
 
 
 log = logging.getLogger(__name__)

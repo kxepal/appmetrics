@@ -5,9 +5,9 @@ import tempfile
 import shutil
 
 from nose import tools as nt
-import mock
 
 from .. import reporter as mm, metrics, py3comp
+from ..py3comp import mock
 
 
 class TestReporter(object):

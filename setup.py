@@ -1,5 +1,12 @@
 from setuptools import setup, find_packages
 
+try:
+    from unittest import mock
+except ImportError:
+    has_mock = False
+else:
+    has_mock = True
+
 setup(
     name="AppMetrics",
     version="0.4.2",
@@ -9,6 +16,11 @@ setup(
     scripts=[],
 
     install_requires=[],
+    extras_require={
+        'test': ['nose==1.3.0'] + ['mock==1.0.1'] if has_mock else [],
+        'dev': ['coverage==3.7.1', 'ipython==1.1.0', 'python-coveralls==2.4.2'],
+        'werkzeug': ['werkzeug']
+    },
 
     package_data={},
 

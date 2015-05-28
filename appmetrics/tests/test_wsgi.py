@@ -1,13 +1,21 @@
 import json
 import io
+import unittest
 
-import mock
 from nose.tools import (
-    assert_equal, assert_false, assert_is_instance, raises, assert_raises,
-    assert_regexp_matches)
-import werkzeug, werkzeug.test
+    assert_equal, assert_false, assert_is_instance, assert_raises,
+    assert_regexp_matches
+)
 
-from .. import wsgi, metrics, py3comp
+try:
+    import werkzeug, werkzeug.test
+    from .. import wsgi
+    has_werkzeug = True
+except ImportError:
+    has_werkzeug = False
+
+from .. import metrics, py3comp
+from ..py3comp import mock
 
 
 def env(path, **kwargs):
@@ -32,6 +40,7 @@ def check_dispatching(mw, url, method, expected):
         assert_equal(endpoint, expected)
 
 
+@unittest.skipIf(not has_werkzeug, 'werkzeug required')
 def test_dispatching():
     tests = [
         ("/_app-metrics", 'GET', werkzeug.exceptions.NotFound),
@@ -51,6 +60,7 @@ def test_dispatching():
         yield lambda url, method: check_dispatching(mw, url, method, expected), url, method
 
 
+@unittest.skipIf(not has_werkzeug, 'werkzeug required')
 def test_dispatching_root():
     tests = [
         ("/metrics", 'GET', wsgi.handle_metrics_list),
@@ -71,6 +81,8 @@ def test_dispatching_root():
 
 class TestAppMetricsMiddleware(object):
     def setUp(self):
+        if not has_werkzeug:
+            raise unittest.SkipTest('werkzeug required')
         self.app = mock.Mock()
         self.start_response = mock.Mock()
 
@@ -212,6 +224,9 @@ class TestAppMetricsMiddleware(object):
 
 class TestWSGIHandlers(object):
     def setUp(self):
+        if not has_werkzeug:
+            raise unittest.SkipTest('werkzeug required')
+
         self.original_registry = metrics.REGISTRY
         metrics.REGISTRY.clear()
 
@@ -274,12 +289,12 @@ class TestWSGIHandlers(object):
         assert_equal(res, "")
         assert_equal(metrics.TAGS, {"tag1": {"test1"}})
 
-    @raises(werkzeug.exceptions.BadRequest)
     def test_handle_tag_add_invalid(self):
-        res = wsgi.handle_tag_add(mock.Mock(), "tag1", "test1")
+        with assert_raises(werkzeug.exceptions.BadRequest):
+            res = wsgi.handle_tag_add(mock.Mock(), "tag1", "test1")
 
-        assert_equal(res, "")
-        assert_equal(metrics.TAGS, {"tag1": {"test1"}})
+            assert_equal(res, "")
+            assert_equal(metrics.TAGS, {"tag1": {"test1"}})
 
     def test_handle_untag_not_existing(self):
         res = wsgi.handle_untag(mock.Mock(), "tag1", "test1")
@@ -291,9 +306,9 @@ class TestWSGIHandlers(object):
         res = wsgi.handle_untag(mock.Mock(), "tag1", "test1")
         assert_equal(res, "deleted")
 
-    @raises(werkzeug.exceptions.NotFound)
     def test_handle_tag_show_not_found(self):
-        wsgi.handle_tag_show(mock.Mock(), "tag1")
+        with assert_raises(werkzeug.exceptions.NotFound):
+            wsgi.handle_tag_show(mock.Mock(), "tag1")
 
     def test_handle_tag_show(self):
         metrics.new_histogram("test1")
@@ -318,17 +333,17 @@ class TestWSGIHandlers(object):
         res = wsgi.handle_tag_show(mock.Mock(args={"expand": 'true'}), "tag1")
         assert_equal(res, '"this is a test"')
 
-    @raises(werkzeug.exceptions.UnsupportedMediaType)
     def test_get_body_no_content_type(self):
         request = werkzeug.wrappers.Request(dict(CONTENT_LENGTH=10))
 
-        wsgi.get_body(request)
+        with assert_raises(werkzeug.exceptions.UnsupportedMediaType):
+            wsgi.get_body(request)
 
-    @raises(werkzeug.exceptions.UnsupportedMediaType)
     def test_get_body_bad_content_type(self):
-        request = werkzeug.wrappers.Request(dict(CONTENT_LENGTH=10, CONTENT_TYPE='text/html'))
-
-        wsgi.get_body(request)
+        request = werkzeug.wrappers.Request(dict(CONTENT_LENGTH=10,
+                                                 CONTENT_TYPE='text/html'))
+        with assert_raises(werkzeug.exceptions.UnsupportedMediaType):
+            wsgi.get_body(request)
 
     def test_get_body_bad_content(self):
         env = {'CONTENT_LENGTH': 4, 'CONTENT_TYPE': "application/json", 'wsgi.input': io.StringIO(u"test wrong")}
@@ -382,9 +397,9 @@ class TestWSGIHandlers(object):
             wsgi.handle_metric_update(req(dict()), "test")
         assert_equal(exc.exception.description, "metric value not provided")
 
-    @raises(werkzeug.exceptions.NotFound)
     def test_handle_metric_update_missing_metric(self):
-        wsgi.handle_metric_update(req(dict(value=1)), "test")
+        with assert_raises(werkzeug.exceptions.NotFound):
+            wsgi.handle_metric_update(req(dict(value=1)), "test")
 
     def test_handle_metric_update(self):
         metric = metrics.new_gauge("test")
